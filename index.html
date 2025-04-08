@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Algorithms</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Main fonts used in the template -->
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/maze-search.css">
+</head>
+<body>
+    <div class="content">
+        <div class="text-block">
+            <h1>Search Algorithms</h1>
+            <div class="author">
+                <p>By Raj Saha, PhD</p>
+            </div>
+            
+            <p>
+                A simulation of the Breadth-First Search (BFS) and Depth-First Search (DFS) algorithms.
+            </p>
+            
+            
+        </div>
+
+        <div class="text-block">
+            <h2>Maze Search Algorithms</h2>
+            
+            <p>Search algorithms are fundamental techniques in computer science for finding paths through complex spaces. Below, we demonstrate two classic search algorithms: Breadth-First Search and Depth-First Search.</p>
+            
+            <p>Breadth-First Search explores all neighbors at the present depth before moving to nodes at the next depth level. This guarantees the shortest path in unweighted graphs. Depth-First Search, on the other hand, explores as far as possible along each branch before backtracking, which can be more memory-efficient but doesn't guarantee the shortest path.</p>
+        </div>
+
+        <!-- Simulation container -->
+        <div class="simulation-container">
+            <div class="simulation-inner">
+                <div class="simulation-grid">
+                    <!-- Left column: Maze parameters -->
+                    <div class="controls-column">
+                        <div class="proportion-control-container">
+                            <h3>Maze Parameters</h3>
+                            <div class="param-group">
+                                <label for="grid-size">Grid Size:</label>
+                                <div class="param-description">Size of the maze grid (NxN)</div>
+                                <div class="slider-container">
+                                    <input type="range" id="grid-size" min="5" max="25" value="15" class="proportion-slider">
+                                    <div class="slider-value" id="grid-size-value">15 x 15</div>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label for="obstacle-density">Obstacle Density:</label>
+                                <div class="param-description">Percentage of cells that are obstacles</div>
+                                <div class="slider-container">
+                                    <input type="range" id="obstacle-density" min="10" max="50" value="30" class="proportion-slider">
+                                    <div class="slider-value" id="obstacle-density-value">30%</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button id="generate-maze" class="primary-button">Generate Maze</button>
+                            <button id="reset-maze" class="secondary-button">Reset</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Middle column: Maze visualization -->
+                    <div class="maze-visualization-column">
+                        <div id="maze-container"></div>
+                    </div>
+                    
+                    <!-- Right column: Algorithm controls and stats -->
+                    <div class="algorithm-column">
+                        <div class="strategy-selection">
+                            <h3>Search Algorithm</h3>
+                            <div class="strategy-group">
+                                <select id="search-algorithm">
+                                    <option value="bfs">Breadth-First Search</option>
+                                    <option value="dfs">Depth-First Search</option>
+                                </select>
+                                <div class="strategy-description" id="algorithm-description">
+                                    Explores all neighbors at the current depth before moving deeper. Guarantees shortest path.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button id="solve-maze" class="primary-button" disabled>Solve Maze</button>
+                            <button id="step-solve" class="secondary-button" disabled>Step</button>
+                        </div>
+                        
+                        <div class="simulation-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Nodes Visited:</span>
+                                <span class="stat-value" id="nodes-visited">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Path Length:</span>
+                                <span class="stat-value" id="path-length">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Status:</span>
+                                <span class="stat-value" id="search-status">Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-block">
+            <h2>How the Algorithms Work</h2>
+            
+            <p>These search algorithms demonstrate fundamental approaches to exploring a space:</p>
+            
+            <ul>
+                <li><strong>Breadth-First Search (BFS)</strong> uses a queue data structure to explore all neighbors at the current depth before moving deeper. This guarantees finding the shortest path in unweighted graphs.</li>
+                <li><strong>Depth-First Search (DFS)</strong> uses a stack data structure to explore as far as possible along each branch before backtracking. While it doesn't guarantee the shortest path, it can be more memory-efficient for certain problems.</li>
+            </ul>
+            
+            <p>The visualization above shows how each algorithm explores the maze differently. BFS expands in concentric "waves" from the start point, while DFS follows a single path as far as possible before trying alternatives.</p>
+        </div>
+
+        
+
+    </div>
+
+    
+    <div class="section-divider"></div> 
+
+    <div id="more-stories-container"></div>
+
+    <script src="assets/js/stories-carousel.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('more-stories.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('more-stories-container').innerHTML = html;
+                    // Initialize the carousel after the content is loaded
+                    if (typeof initStoryCarousel === 'function') {
+                        setTimeout(initStoryCarousel, 100);
+                    }
+                })
+                .catch(error => console.error('Error loading more-stories section:', error));
+        });
+    </script>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 Raj Saha</p>
+            <p><a href="https://github.com/saha-raj/" target="_blank">Github</a> / <a
+                    href="https://www.linkedin.com/in/rajsahaphd/" target="_blank">LinkedIn</a></p>
+        </div>
+    </footer>
+
+    <!-- Load D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Load the maze search simulation script -->
+    <script src="js/maze-search.js"></script>
+</body>
+</html> 

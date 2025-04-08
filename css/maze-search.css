@@ -1,0 +1,147 @@
+/* Maze Search Visualization Styles */
+
+/* Simulation container adjustments */
+.simulation-container {
+    padding: 2rem 0;
+    overflow-x: auto;
+}
+
+.simulation-grid {
+    grid-template-columns: 200px minmax(700px, 1fr) 200px;
+    gap: 20px;
+}
+
+/* Maze visualization column */
+.maze-visualization-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    height: 700px;
+    min-width: 700px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#maze-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Button styles */
+.primary-button {
+    background-color: var(--primary-btn, #3a86ff);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.primary-button:hover {
+    background-color: var(--primary-btn-hover, #2a75ee);
+}
+
+.primary-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.secondary-button {
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.secondary-button:hover {
+    background-color: #e9ecef;
+}
+
+.secondary-button:disabled {
+    color: #999;
+    border-color: #eee;
+    cursor: not-allowed;
+}
+
+/* Simulation stats */
+.simulation-stats {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.stat-item:last-child {
+    margin-bottom: 0;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: #555;
+}
+
+.stat-value {
+    font-family: monospace;
+    font-size: 1.1em;
+}
+
+/* Slider value display */
+.slider-value {
+    text-align: center;
+    font-family: monospace;
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Algorithm selection */
+#search-algorithm {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+}
+
+/* Style the algorithm column (new right column) */
+.algorithm-column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-self: start;
+}
+
+/* Button group spacing */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+/* Make buttons fill their container */
+.button-group button {
+    flex: 1;
+}
+
+.simulation-inner {
+    min-width: 1100px; /* Ensure minimum width to accommodate the larger maze */
+} 
