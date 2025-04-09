@@ -19,6 +19,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css">
     <!-- Add JetBrains Mono font -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+    <!-- Make sure font-display is set to swap to prevent invisible text during loading -->
+    <style>
+        /* Ensure fonts render properly even if loading is delayed */
+        body {
+            font-display: swap;
+        }
+    </style>
 </head>
 <body>
     <div class="content">
@@ -199,27 +206,6 @@
         
 
     </div>
-
-    
-    <div class="section-divider"></div> 
-
-    <div id="more-stories-container"></div>
-
-    <script src="assets/js/stories-carousel.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            fetch('more-stories.html')
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('more-stories-container').innerHTML = html;
-                    // Initialize the carousel after the content is loaded
-                    if (typeof initStoryCarousel === 'function') {
-                        setTimeout(initStoryCarousel, 100);
-                    }
-                })
-                .catch(error => console.error('Error loading more-stories section:', error));
-        });
-    </script>
 
     <footer class="footer">
         <div class="container">
