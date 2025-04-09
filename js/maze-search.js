@@ -26,6 +26,7 @@ class MazeSearch {
         this.nodesVisitedElement = document.getElementById('nodes-visited');
         this.pathLengthElement = document.getElementById('path-length');
         this.searchStatusElement = document.getElementById('search-status');
+        this.showBranchingCheckbox = document.getElementById('show-branching');
         
         // Maze parameters
         this.gridSize = parseInt(this.gridSizeSlider.value);
@@ -61,6 +62,9 @@ class MazeSearch {
             path: '#FFC107',
             current: '#2196F3'
         };
+        
+        // Show branching checkbox
+        this.showBranching = this.showBranchingCheckbox.checked;
         
         // Initialize event listeners
         this.initEventListeners();
@@ -112,6 +116,12 @@ class MazeSearch {
             this.resetMaze();
         });
         
+        // Show branching checkbox
+        this.showBranchingCheckbox.addEventListener('change', () => {
+            this.showBranching = this.showBranchingCheckbox.checked;
+            this.renderMaze();
+        });
+        
         // Update algorithm description initially
         this.updateAlgorithmDescription();
         
@@ -126,10 +136,22 @@ class MazeSearch {
      * Update the algorithm description based on the selected algorithm
      */
     updateAlgorithmDescription() {
-        if (this.searchAlgorithm === 'bfs') {
-            this.algorithmDescription.textContent = 'Explores all neighbors at the current depth before moving deeper. Guarantees shortest path.';
-        } else if (this.searchAlgorithm === 'dfs') {
-            this.algorithmDescription.textContent = 'Explores as far as possible along each branch before backtracking. Memory efficient but may not find shortest path.';
+        switch(this.searchAlgorithm) {
+            case 'bfs':
+                this.algorithmDescription.textContent = 'Explores all neighbors at the current depth before moving deeper. Guarantees shortest path.';
+                break;
+            case 'dfs':
+                this.algorithmDescription.textContent = 'Explores as far as possible along each branch before backtracking. Memory efficient but may not find shortest path.';
+                break;
+            case 'astar':
+                this.algorithmDescription.textContent = 'Uses a heuristic to guide search toward the goal while considering path cost. Efficient and guarantees shortest path.';
+                break;
+            case 'greedy':
+                this.algorithmDescription.textContent = 'Always moves toward the goal using a heuristic. Fast but may not find shortest path.';
+                break;
+            case 'dijkstra':
+                this.algorithmDescription.textContent = 'Explores nodes based on distance from start. Guarantees shortest path but less efficient than A*.';
+                break;
         }
     }
     
@@ -212,6 +234,7 @@ class MazeSearch {
         this.currentNode = null;
         this.isRunning = false;
         this.isSolved = false;
+        this.parentMap = new Map(); // Clear the parent map to remove branches
         
         // Reset statistics
         this.nodesVisitedElement.textContent = '0';
@@ -269,8 +292,10 @@ class MazeSearch {
         svg.style.display = 'block';
         svg.style.margin = '0 auto';
         
-        // Create a group for the grid cells
+        // Create groups for different elements (layering)
+        const connectionsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const nodesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         
         // Draw the grid cells
         for (let x = 0; x < this.gridSize; x++) {
@@ -316,15 +341,114 @@ class MazeSearch {
             }
         }
         
+        // Draw the branching connections if enabled
+        if (this.showBranching && this.parentMap && this.parentMap.size > 0) {
+            this.drawBranchingConnections(connectionsGroup);
+        }
+        
+        // Draw node circles for visited nodes if branching is enabled
+        if (this.showBranching && this.visitedNodes.size > 0) {
+            this.drawNodeCircles(nodesGroup);
+        }
+        
         // Add labels for start and goal
         this.addLabel(gridGroup, this.start[0], this.start[1], 'S');
         this.addLabel(gridGroup, this.goal[0], this.goal[1], 'G');
         
-        // Add the grid group to the SVG
-        svg.appendChild(gridGroup);
+        // Add the groups to the SVG in the correct order (bottom to top)
+        svg.appendChild(gridGroup);      // Grid cells at the bottom
+        svg.appendChild(connectionsGroup); // Connections in the middle
+        svg.appendChild(nodesGroup);     // Node circles on top
         
         // Add the SVG to the container
         this.mazeContainer.appendChild(svg);
+    }
+    
+    /**
+     * Draw branching connections between nodes
+     */
+    drawBranchingConnections(group) {
+        // Iterate through the parent map to draw connections
+        this.parentMap.forEach((parentNode, childKey) => {
+            const [childX, childY] = childKey.split(',').map(Number);
+            const [parentX, parentY] = parentNode;
+            
+            // Calculate center points
+            const childCenterX = childX * this.cellSize + this.cellSize / 2;
+            const childCenterY = childY * this.cellSize + this.cellSize / 2;
+            const parentCenterX = parentX * this.cellSize + this.cellSize / 2;
+            const parentCenterY = parentY * this.cellSize + this.cellSize / 2;
+            
+            // Create a line connecting parent to child
+            const connection = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            connection.setAttribute('x1', parentCenterX);
+            connection.setAttribute('y1', parentCenterY);
+            connection.setAttribute('x2', childCenterX);
+            connection.setAttribute('y2', childCenterY);
+            connection.setAttribute('stroke', '#aaa');
+            connection.setAttribute('stroke-width', '1.5');
+            connection.setAttribute('stroke-opacity', '0.6');
+            
+            group.appendChild(connection);
+        });
+    }
+    
+    /**
+     * Draw small circles at the center of visited nodes
+     */
+    drawNodeCircles(group) {
+        // Add a circle for the start node
+        this.addNodeCircle(group, this.start[0], this.start[1], '#4CAF50');
+        
+        // Add circles for all visited nodes
+        this.visitedNodes.forEach(nodeKey => {
+            const [x, y] = nodeKey.split(',').map(Number);
+            
+            // Skip start and goal nodes (they already have markers)
+            if ((x === this.start[0] && y === this.start[1]) || 
+                (x === this.goal[0] && y === this.goal[1])) {
+                return;
+            }
+            
+            // Determine color based on node type
+            let color = '#888';
+            
+            if (this.isNodeInPath(x, y)) {
+                // Path node
+                color = '#FFC107';
+            } else if (this.currentNode && this.currentNode[0] === x && this.currentNode[1] === y) {
+                // Current node
+                color = '#2196F3';
+            } else if (this.isNodeInFrontier(x, y)) {
+                // Frontier node
+                color = '#81D4FA';
+            }
+            
+            this.addNodeCircle(group, x, y, color);
+        });
+        
+        // Add a circle for the goal node if it's been visited
+        if (this.visitedNodes.has(`${this.goal[0]},${this.goal[1]}`)) {
+            this.addNodeCircle(group, this.goal[0], this.goal[1], '#F44336');
+        }
+    }
+    
+    /**
+     * Add a circle at the center of a node
+     */
+    addNodeCircle(group, x, y, color) {
+        const centerX = x * this.cellSize + this.cellSize / 2;
+        const centerY = y * this.cellSize + this.cellSize / 2;
+        
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', centerX);
+        circle.setAttribute('cy', centerY);
+        circle.setAttribute('r', Math.max(3, this.cellSize / 10));
+        circle.setAttribute('fill', color);
+        circle.setAttribute('stroke', '#fff');
+        circle.setAttribute('stroke-width', '1');
+        
+        group.appendChild(circle);
     }
     
     /**
@@ -354,7 +478,13 @@ class MazeSearch {
      * Check if a node is in the frontier
      */
     isNodeInFrontier(x, y) {
-        return this.frontier.some(node => node[0] === x && node[1] === y);
+        if (this.searchAlgorithm === 'bfs' || this.searchAlgorithm === 'dfs') {
+            // For BFS and DFS, frontier is an array of nodes
+            return this.frontier.some(node => node[0] === x && node[1] === y);
+        } else {
+            // For informed search algorithms, frontier is an array of [node, priority, cost]
+            return this.frontier.some(item => item[0][0] === x && item[0][1] === y);
+        }
     }
     
     /**
@@ -394,6 +524,13 @@ class MazeSearch {
     }
     
     /**
+     * Calculate Manhattan distance heuristic between two points
+     */
+    calculateHeuristic(node, goal) {
+        return Math.abs(node[0] - goal[0]) + Math.abs(node[1] - goal[1]);
+    }
+    
+    /**
      * Initialize the search algorithm
      */
     initializeSearch() {
@@ -403,13 +540,27 @@ class MazeSearch {
         this.path = [];
         this.currentNode = null;
         
-        // Add start node to frontier
-        if (this.searchAlgorithm === 'bfs') {
-            // For BFS, use a queue (FIFO)
-            this.frontier = [this.start];
-        } else {
-            // For DFS, use a stack (LIFO)
-            this.frontier = [this.start];
+        // Initialize based on algorithm type
+        switch(this.searchAlgorithm) {
+            case 'bfs':
+                // For BFS, use a queue (FIFO)
+                this.frontier = [this.start];
+                break;
+            case 'dfs':
+                // For DFS, use a stack (LIFO)
+                this.frontier = [this.start];
+                break;
+            case 'astar':
+            case 'greedy':
+            case 'dijkstra':
+                // For informed search algorithms, use a priority queue
+                // Store [node, priority, cost] where priority is used for sorting
+                const startHeuristic = this.calculateHeuristic(this.start, this.goal);
+                this.frontier = [[this.start, startHeuristic, 0]];
+                // Keep track of costs to reach each node
+                this.costSoFar = new Map();
+                this.costSoFar.set(`${this.start[0]},${this.start[1]}`, 0);
+                break;
         }
         
         // Mark start as visited
@@ -444,13 +595,24 @@ class MazeSearch {
             return false;
         }
         
-        // Get the next node from the frontier
-        if (this.searchAlgorithm === 'bfs') {
-            // For BFS, take from the front (queue)
-            this.currentNode = this.frontier.shift();
-        } else {
-            // For DFS, take from the end (stack)
-            this.currentNode = this.frontier.pop();
+        // Get the next node from the frontier based on algorithm
+        switch(this.searchAlgorithm) {
+            case 'bfs':
+                // For BFS, take from the front (queue)
+                this.currentNode = this.frontier.shift();
+                break;
+            case 'dfs':
+                // For DFS, take from the end (stack)
+                this.currentNode = this.frontier.pop();
+                break;
+            case 'astar':
+            case 'greedy':
+            case 'dijkstra':
+                // For informed search, sort by priority and take the lowest
+                this.frontier.sort((a, b) => a[1] - b[1]);
+                const [node, _, cost] = this.frontier.shift();
+                this.currentNode = node;
+                break;
         }
         
         const [x, y] = this.currentNode;
@@ -474,17 +636,53 @@ class MazeSearch {
             const [nx, ny] = neighbor;
             const neighborKey = `${nx},${ny}`;
             
-            // Skip if already visited
-            if (this.visitedNodes.has(neighborKey)) {
-                continue;
+            // Skip if already visited (except for informed search algorithms)
+            if (this.searchAlgorithm === 'bfs' || this.searchAlgorithm === 'dfs') {
+                if (this.visitedNodes.has(neighborKey)) {
+                    continue;
+                }
+                
+                // Add to frontier and mark as visited
+                this.frontier.push(neighbor);
+                this.visitedNodes.add(neighborKey);
+                
+                // Update parent map for path reconstruction
+                this.parentMap.set(neighborKey, this.currentNode);
+            } else {
+                // For informed search algorithms (A*, Greedy, Dijkstra)
+                // Calculate new cost to reach this neighbor
+                const newCost = (this.costSoFar.get(currentKey) || 0) + 1; // Assuming uniform cost of 1
+                
+                // Skip if we've found a better path already
+                if (this.costSoFar.has(neighborKey) && newCost >= this.costSoFar.get(neighborKey)) {
+                    continue;
+                }
+                
+                // Update cost and parent
+                this.costSoFar.set(neighborKey, newCost);
+                this.parentMap.set(neighborKey, this.currentNode);
+                
+                // Calculate priority based on algorithm
+                let priority;
+                switch(this.searchAlgorithm) {
+                    case 'astar':
+                        // A* uses cost so far + heuristic
+                        priority = newCost + this.calculateHeuristic(neighbor, this.goal);
+                        break;
+                    case 'greedy':
+                        // Greedy only uses heuristic
+                        priority = this.calculateHeuristic(neighbor, this.goal);
+                        break;
+                    case 'dijkstra':
+                        // Dijkstra only uses cost so far
+                        priority = newCost;
+                        break;
+                }
+                
+                // Add to frontier with priority
+                this.frontier.push([neighbor, priority, newCost]);
+                this.visitedNodes.add(neighborKey);
             }
-            
-            // Add to frontier and mark as visited
-            this.frontier.push(neighbor);
-            this.visitedNodes.add(neighborKey);
-            
-            // Update parent map for path reconstruction
-            this.parentMap.set(neighborKey, this.currentNode);
         }
         
         // Update statistics
