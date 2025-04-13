@@ -207,6 +207,26 @@
 
     </div>
 
+    <div class="section-divider"></div>
+    
+    <div id="more-stories-container"></div>
+    
+    <script src="assets/js/stories-carousel.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('more-stories.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('more-stories-container').innerHTML = html;
+                    // Initialize the carousel after the content is loaded
+                    if (typeof initStoryCarousel === 'function') {
+                        setTimeout(initStoryCarousel, 100);
+                    }
+                })
+                .catch(error => console.error('Error loading more-stories section:', error));
+        });
+    </script>
+
     <footer class="footer">
         <div class="container">
             <p>© 2024 Raj Saha</p>
